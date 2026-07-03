@@ -1,13 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MainLayout from '../../layouts/MainLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, Plus, Minus, ArrowRight, ShoppingBag } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import useCart from '../../hooks/useCart';
+import foodService from '../../services/foodService';
 
 const Cart = () => {
   const { items, addItem, removeItem, clearAll, subtotal, deliveryFee, total } = useCart();
+  const [restaurants, setRestaurants] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadRestaurants = async () => {
+      try {
+        const data = await foodService.getAllRestaurants();
+        setRestaurants(data);
+      } catch (err) {
+        console.error("Failed to load restaurants:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadRestaurants();
+  }, []);
+
+  // Group items by restaurant
+  const groupItemsByRestaurant = () => {
+    const grouped = {};
+    items.forEach(item => {
+      if (!grouped[item.restaurantId]) {
+        grouped[item.restaurantId] = [];
+      }
+      grouped[item.restaurantId].push(item);
+    });
+    return grouped;
+  };
+
+  const getRestaurantName = (restaurantId) => {
+    const restaurant = restaurants.find(r => r._id === restaurantId);
+    return restaurant?.name || 'Restaurant';
+  };
 
   return (
     <MainLayout>
@@ -40,52 +74,59 @@ const Cart = () => {
             <div className="lg:col-span-2 space-y-8">
               <AnimatePresence mode='popLayout'>
                 {items.length > 0 ? (
-                  items.map((item) => (
-                    <motion.div 
-                      key={item.id}
-                      layout
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 20 }}
-                      className="flex items-center space-x-6 bg-white p-6 border border-gray-100 shadow-sm"
-                    >
-                      <div className="w-24 h-24 flex-shrink-0 overflow-hidden">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" />
-                      </div>
-                      <div className="flex-grow">
-                        <h3 className="text-lg font-serif font-bold text-premium-dark mb-2">{item.name}</h3>
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center border border-gray-100">
-                            <button 
-                              onClick={() => removeItem(item.id)}
-                              className="p-2 hover:bg-gray-50 transition-colors"
-                            >
-                              <Minus size={12} />
-                            </button>
-                            <span className="px-4 text-xs font-bold">{item.quantity}</span>
-                            <button 
-                              onClick={() => addItem(item, item.restaurantId)}
-                              className="p-2 hover:bg-gray-50 transition-colors"
-                            >
-                              <Plus size={12} />
-                            </button>
+                  Object.entries(groupItemsByRestaurant()).map(([restaurantId, restaurantItems]) => (
+                    <div key={restaurantId} className="space-y-4">
+                      <h3 className="text-xs uppercase tracking-[0.3em] font-bold text-premium-dark/60 flex items-center">
+                        {getRestaurantName(restaurantId)}
+                      </h3>
+                      {restaurantItems.map((item) => (
+                        <motion.div 
+                          key={item._id}
+                          layout
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 20 }}
+                          className="flex items-center space-x-6 bg-white p-6 border border-gray-100 shadow-sm"
+                        >
+                          <div className="w-24 h-24 flex-shrink-0 overflow-hidden">
+                            <img src={item.image} alt={item.name} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" />
                           </div>
-                          <button 
-                            onClick={() => {
-                              // Custom logic to remove all of this item
-                              for(let i=0; i<item.quantity; i++) removeItem(item.id);
-                            }}
-                            className="text-premium-dark/30 hover:text-red-500 transition-colors"
-                          >
-                            <Trash2 size={16} strokeWidth={1.5} />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-serif font-bold text-premium-dark">${(item.price * item.quantity).toFixed(2)}</p>
-                        <p className="text-[10px] text-premium-dark/30 uppercase tracking-widest">${item.price} each</p>
-                      </div>
-                    </motion.div>
+                          <div className="flex-grow">
+                            <h3 className="text-lg font-serif font-bold text-premium-dark mb-2">{item.name}</h3>
+                            <div className="flex items-center space-x-4">
+                              <div className="flex items-center border border-gray-100">
+                                <button 
+                                  onClick={() => removeItem(item._id)}
+                                  className="p-2 hover:bg-gray-50 transition-colors"
+                                >
+                                  <Minus size={12} />
+                                </button>
+                                <span className="px-4 text-xs font-bold">{item.quantity}</span>
+                                <button 
+                                  onClick={() => addItem(item, item.restaurantId)}
+                                  className="p-2 hover:bg-gray-50 transition-colors"
+                                >
+                                  <Plus size={12} />
+                                </button>
+                              </div>
+                              <button 
+                                onClick={() => {
+                                  // Custom logic to remove all of this item
+                                  for(let i=0; i<item.quantity; i++) removeItem(item._id);
+                                }}
+                                className="text-premium-dark/30 hover:text-red-500 transition-colors"
+                              >
+                                <Trash2 size={16} strokeWidth={1.5} />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-serif font-bold text-premium-dark">${(item.price * item.quantity).toFixed(2)}</p>
+                            <p className="text-[10px] text-premium-dark/30 uppercase tracking-widest">${item.price} each</p>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
                   ))
                 ) : (
                   <motion.div 

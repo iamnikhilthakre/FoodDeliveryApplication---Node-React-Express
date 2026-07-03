@@ -4,84 +4,49 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import RestaurantCard from '../../components/RestaurantCard';
 import { useLocation } from 'react-router-dom';
+import foodService from '../../services/foodService';
 
 const Restaurants = () => {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [restaurants, setRestaurants] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const category = params.get('category');
+    const search = params.get('search');
     if (category) {
       setSelectedCategory(category);
     }
+    if (search) {
+      setSearchQuery(search);
+    }
   }, [location]);
+
+  useEffect(() => {
+    const loadRestaurants = async () => {
+      try {
+        const data = await foodService.getAllRestaurants();
+        setRestaurants(data);
+      } catch (err) {
+        console.error('Failed to load restaurants:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadRestaurants();
+  }, []);
   
   const categories = ['All', 'Italian', 'Japanese', 'French', 'Modern Indian', 'Mediterranean'];
   
-  // Mock data for restaurants
-  const allRestaurants = [
-    {
-      id: 1,
-      name: "L'Atelier de Cuisine",
-      cuisine: "French",
-      rating: 4.9,
-      deliveryTime: "25-35",
-      location: "Mayfair, London",
-      image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=800"
-    },
-    {
-      id: 2,
-      name: "Sora Sushi",
-      cuisine: "Japanese",
-      rating: 4.8,
-      deliveryTime: "20-30",
-      location: "Soho, London",
-      image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&q=80&w=800"
-    },
-    {
-      id: 3,
-      name: "Trattoria Milano",
-      cuisine: "Italian",
-      rating: 4.7,
-      deliveryTime: "30-45",
-      location: "Chelsea, London",
-      image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=800"
-    },
-    {
-      id: 4,
-      name: "The Gilded Saffron",
-      cuisine: "Modern Indian",
-      rating: 4.9,
-      deliveryTime: "40-55",
-      location: "Belgravia, London",
-      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=800"
-    },
-    {
-      id: 5,
-      name: "Azur Mediterranean",
-      cuisine: "Mediterranean",
-      rating: 4.6,
-      deliveryTime: "25-40",
-      location: "Kensington, London",
-      image: "https://images.unsplash.com/photo-1544124499-58912cbddaad?auto=format&fit=crop&q=80&w=800"
-    },
-    {
-      id: 6,
-      name: "Luxe Grill",
-      cuisine: "French",
-      rating: 4.8,
-      deliveryTime: "35-50",
-      location: "Marylebone, London",
-      image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80&w=800"
-    }
-  ];
-
-  const filteredRestaurants = allRestaurants.filter(res => {
+  const filteredRestaurants = restaurants.filter(res => {
+    if (!res) return false;
+    const resCuisine = res.cuisine ? res.cuisine.toLowerCase() : '';
     const matchesSearch = res.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         res.cuisine.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || res.cuisine.includes(selectedCategory);
+                         resCuisine.includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'All' || resCuisine === selectedCategory.toLowerCase();
     return matchesSearch && matchesCategory;
   });
 
@@ -116,10 +81,10 @@ const Restaurants = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <button className="flex items-center justify-center space-x-3 bg-white border border-gray-100 px-6 py-3 text-[10px] uppercase tracking-widest font-bold text-premium-dark hover:border-premium-accent transition-all">
+              {/* <button className="flex items-center justify-center space-x-3 bg-white border border-gray-100 px-6 py-3 text-[10px] uppercase tracking-widest font-bold text-premium-dark hover:border-premium-accent transition-all">
                 <SlidersHorizontal size={14} />
                 <span>Filters</span>
-              </button>
+              </button> */}
             </motion.div>
           </div>
 
@@ -150,22 +115,41 @@ const Restaurants = () => {
           </motion.div>
 
           {/* Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-            <AnimatePresence mode='popLayout'>
-              {filteredRestaurants.map((res, idx) => (
-                <motion.div
-                  key={res.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.4, delay: 0.05 * idx }}
-                >
-                  <RestaurantCard restaurant={res} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <p className="text-premium-dark/50">Loading...</p>
+            </div>
+          ) : filteredRestaurants.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-sm text-premium-dark/40 uppercase tracking-widest mb-6">No restaurants found</p>
+              <button 
+                onClick={() => {
+                  setSelectedCategory('All');
+                  setSearchQuery('');
+                }}
+                className="text-[10px] uppercase tracking-widest font-bold text-premium-accent hover:underline"
+              >
+                Reset filters
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+              <AnimatePresence mode='popLayout'>
+                {filteredRestaurants.map((res, idx) => (
+                  <motion.div
+                    key={res._id}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.4, delay: 0.05 * idx }}
+                  >
+                    <RestaurantCard restaurant={res} />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          )}
 
           {/* Load More */}
           <div className="mt-20 text-center">

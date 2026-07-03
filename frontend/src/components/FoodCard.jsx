@@ -4,7 +4,7 @@ import { Plus, ShoppingBag } from 'lucide-react';
 
 const FoodCard = ({ food, onAddToCart }) => {
   const data = food || {
-    id: 1,
+    _id: '1',
     name: "Truffle Tagliatelle",
     description: "Hand-rolled pasta, seasonal black truffle, 36-month aged Parmigiano Reggiano.",
     price: 45,

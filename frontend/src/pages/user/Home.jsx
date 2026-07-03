@@ -1,18 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MainLayout from '../../layouts/MainLayout';
 import { motion } from 'framer-motion';
-import { ArrowRight, Star, Clock, MapPin } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import useCart from '../../hooks/useCart';
+import { ArrowRight, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import RestaurantCard from '../../components/RestaurantCard';
+import foodService from '../../services/foodService';
 
 const Home = () => {
   const navigate = useNavigate();
-  const { addItem } = useCart();
+  const [restaurants, setRestaurants] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleAddToCart = (food) => {
-    // For featured restaurants on home, we use a mock restaurant ID
-    addItem(food, 1);
-  };
+  useEffect(() => {
+    const loadRestaurants = async () => {
+      try {
+        const data = await foodService.getAllRestaurants();
+        setRestaurants(data.slice(0, 3)); // show first 3 as featured
+      } catch (err) {
+        console.error("Failed to load restaurants:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadRestaurants();
+  }, []);
+
   return (
     <MainLayout>
       {/* Hero Section */}
@@ -135,50 +147,17 @@ const Home = () => {
             <h2 className="text-4xl font-serif font-bold text-premium-dark">Featured Partners</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {[
-              { id: 1, name: "L'Atelier de Cuisine", image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=800" },
-              { id: 2, name: "Sora Sushi", image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&q=80&w=800" },
-              { id: 3, name: "Trattoria Milano", image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=800" }
-            ].map((restaurant) => (
-              <motion.div 
-                key={restaurant.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="bg-white group cursor-pointer"
-                onClick={() => navigate(`/restaurant/${restaurant.id}`)}
-              >
-                <div className="aspect-video overflow-hidden relative">
-                  <img 
-                    src={restaurant.image} 
-                    alt={restaurant.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-premium-dark">
-                    Featured
-                  </div>
-                </div>
-                <div className="p-8">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-lg font-serif font-bold text-premium-dark">{restaurant.name}</h3>
-                    <div className="flex items-center text-premium-accent">
-                      <Star fill="currentColor" size={12} />
-                      <span className="ml-1 text-[10px] font-bold">4.9</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center text-premium-dark/40 text-[10px] uppercase tracking-widest space-x-4 mb-6">
-                    <span className="flex items-center"><Clock size={12} className="mr-1" /> 25-35 min</span>
-                    <span className="flex items-center"><MapPin size={12} className="mr-1" /> Mayfair, London</span>
-                  </div>
-                  <div className="w-full py-4 border-t border-gray-100 text-[10px] uppercase tracking-[0.2em] font-bold text-premium-dark group-hover:text-premium-accent transition-colors flex items-center justify-center space-x-2">
-                    <span>View Menu</span>
-                    <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <p className="text-premium-dark/50">Loading...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+              {restaurants.map((restaurant) => (
+                <RestaurantCard key={restaurant._id} restaurant={restaurant} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </MainLayout>

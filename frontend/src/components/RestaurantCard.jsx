@@ -6,12 +6,12 @@ import { Link } from 'react-router-dom';
 const RestaurantCard = ({ restaurant }) => {
   // Fallback data if none provided
   const data = restaurant || {
-    id: 1,
+    _id: 1,
     name: "L'Atelier de Cuisine",
     cuisine: "French Contemporary",
     rating: 4.9,
     deliveryTime: "25-35",
-    location: "Mayfair, London",
+    address: "Mayfair, London",
     image: "https://images.unsplash.com/photo-1514933651103-319053092b3b?auto=format&fit=crop&q=80&w=800"
   };
 
@@ -22,7 +22,7 @@ const RestaurantCard = ({ restaurant }) => {
       viewport={{ once: true }}
       className="bg-white group border border-gray-100 overflow-hidden"
     >
-      <Link to={`/restaurant/${data.id}`}>
+      <Link to={`/restaurant/${data._id}`}>
         <div className="aspect-[16/9] overflow-hidden relative">
           <img 
             src={data.image} 
@@ -47,7 +47,7 @@ const RestaurantCard = ({ restaurant }) => {
 
           <div className="flex items-center text-premium-dark/40 text-[10px] uppercase tracking-widest space-x-4 mb-8">
             <span className="flex items-center"><Clock size={12} className="mr-1" /> {data.deliveryTime} min</span>
-            <span className="flex items-center"><MapPin size={12} className="mr-1" /> {data.location}</span>
+            <span className="flex items-center"><MapPin size={12} className="mr-1" /> {data.address}</span>
           </div>
 
           <div className="pt-6 border-t border-gray-100 flex items-center justify-between">

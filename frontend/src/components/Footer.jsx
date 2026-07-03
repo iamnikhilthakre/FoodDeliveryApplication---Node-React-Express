@@ -44,10 +44,10 @@ const Footer = () => {
           <div>
             <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-premium-dark mb-6">Connect</h4>
             <div className="flex space-x-4 mb-6">
-              <a href="#" className="text-premium-dark/40 hover:text-premium-accent transition-colors">
+              <a href="mailto:contact@luxeeats.com" className="text-premium-dark/40 hover:text-premium-accent transition-colors">
                 <Mail size={18} strokeWidth={1.5} />
               </a>
-              <a href="#" className="text-premium-dark/40 hover:text-premium-accent transition-colors">
+              <a href="tel:+442012345678" className="text-premium-dark/40 hover:text-premium-accent transition-colors">
                 <Phone size={18} strokeWidth={1.5} />
               </a>
               <a href="#" className="text-premium-dark/40 hover:text-premium-accent transition-colors">

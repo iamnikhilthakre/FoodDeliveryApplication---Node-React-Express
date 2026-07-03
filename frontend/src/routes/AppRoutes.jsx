@@ -10,6 +10,15 @@ import Register from '../pages/user/Register';
 import Profile from '../pages/user/Profile';
 import Orders from '../pages/user/Orders';
 import About from '../pages/user/About';
+import Contact from '../pages/user/Contact';
+import Offers from '../pages/user/Offers';
+import Cuisines from '../pages/user/Cuisines';
+import Addresses from '../pages/user/Addresses';
+import Settings from '../pages/user/Settings';
+import Careers from '../pages/user/Careers';
+import FAQ from '../pages/user/FAQ';
+import Privacy from '../pages/user/Privacy';
+import Terms from '../pages/user/Terms';
 import ProtectedRoute from '../components/ProtectedRoute';
 
 // Admin Pages
@@ -36,6 +45,13 @@ const AppRoutes = () => {
       <Route path="/cart" element={<Cart />} />
       <Route path="/checkout" element={<Checkout />} />
       <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/offers" element={<Offers />} />
+      <Route path="/cuisines" element={<Cuisines />} />
+      <Route path="/careers" element={<Careers />} />
+      <Route path="/faq" element={<FAQ />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
 
       {/* User Protected Routes */}
       <Route 
@@ -51,6 +67,22 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Orders />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/addresses" 
+        element={
+          <ProtectedRoute>
+            <Addresses />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/settings" 
+        element={
+          <ProtectedRoute>
+            <Settings />
           </ProtectedRoute>
         } 
       />

@@ -9,8 +9,8 @@ const useCart = () => {
     dispatch(addToCart({ ...item, restaurantId: resId }));
   };
 
-  const removeItem = (id) => {
-    dispatch(removeFromCart(id));
+  const removeItem = (_id) => {
+    dispatch(removeFromCart(_id));
   };
 
   const clearAll = () => {

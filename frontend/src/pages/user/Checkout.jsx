@@ -16,8 +16,20 @@ const Checkout = () => {
     street: '',
     apartment: ''
   });
+  const [payment, setPayment] = useState({
+    cardNumber: '',
+    expiry: '',
+    cvc: ''
+  });
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const validatePayment = () => {
+    if (!payment.cardNumber.trim() || payment.cardNumber.length < 13) return false;
+    if (!payment.expiry.trim() || !payment.expiry.includes('/')) return false;
+    if (!payment.cvc.trim() || payment.cvc.length < 3) return false;
+    return true;
+  };
 
   const handlePlaceOrder = async () => {
     if (!address.street) {
@@ -25,11 +37,16 @@ const Checkout = () => {
       setStep(1);
       return;
     }
+    
+    if (!validatePayment()) {
+      alert("Please enter valid payment details.");
+      return;
+    }
 
     setLoading(true);
     try {
       const orderData = {
-        items: items.map(item => ({ food: item.id, quantity: item.quantity })),
+        items: items.map(item => ({ food: item._id, quantity: item.quantity })),
         totalPrice: total,
         address: `${address.street}${address.apartment ? ', ' + address.apartment : ''}`
       };
@@ -162,10 +179,41 @@ const Checkout = () => {
                         <div className="w-3 h-3 rounded-full bg-premium-dark" />
                       </div>
                       <div className="space-y-6">
-                        <input type="text" placeholder="CARD NUMBER" className="w-full border-b border-gray-200 py-3 outline-none focus:border-premium-dark text-xs uppercase tracking-widest" />
+                        <input 
+                          type="text" 
+                          placeholder="CARD NUMBER" 
+                          maxLength={19}
+                          className="w-full border-b border-gray-200 py-3 outline-none focus:border-premium-dark text-xs uppercase tracking-widest" 
+                          value={payment.cardNumber}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/\s/g, '');
+                            value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+                            setPayment({ ...payment, cardNumber: value });
+                          }}
+                        />
                         <div className="grid grid-cols-2 gap-8">
-                          <input type="text" placeholder="MM/YY" className="w-full border-b border-gray-200 py-3 outline-none focus:border-premium-dark text-xs uppercase tracking-widest" />
-                          <input type="text" placeholder="CVC" className="w-full border-b border-gray-200 py-3 outline-none focus:border-premium-dark text-xs uppercase tracking-widest" />
+                          <input 
+                            type="text" 
+                            placeholder="MM/YY" 
+                            maxLength={5}
+                            className="w-full border-b border-gray-200 py-3 outline-none focus:border-premium-dark text-xs uppercase tracking-widest" 
+                            value={payment.expiry}
+                            onChange={(e) => {
+                              let value = e.target.value.replace(/\D/g, '');
+                              if (value.length >= 2) {
+                                value = value.slice(0, 2) + '/' + value.slice(2, 4);
+                              }
+                              setPayment({ ...payment, expiry: value });
+                            }}
+                          />
+                          <input 
+                            type="text" 
+                            placeholder="CVC" 
+                            maxLength={4}
+                            className="w-full border-b border-gray-200 py-3 outline-none focus:border-premium-dark text-xs uppercase tracking-widest" 
+                            value={payment.cvc}
+                            onChange={(e) => setPayment({ ...payment, cvc: e.target.value.replace(/\D/g, '') })}
+                          />
                         </div>
                       </div>
                       <div className="flex items-center space-x-4 text-[9px] uppercase tracking-[0.2em] text-premium-dark/30 bg-premium-light p-4">
@@ -196,7 +244,7 @@ const Checkout = () => {
                   <h3 className="text-xl font-serif font-bold mb-8 border-b border-white/10 pb-6 uppercase tracking-widest">Your Selection</h3>
                   <div className="space-y-6 mb-12">
                     {items.map((item) => (
-                      <div key={item.id} className="flex justify-between items-start">
+                      <div key={item._id} className="flex justify-between items-start">
                         <div className="flex-grow pr-4">
                           <p className="text-[10px] uppercase tracking-widest font-bold">{item.name}</p>
                           <p className="text-[8px] uppercase tracking-widest text-white/40 mt-1">QTY: {item.quantity}</p>

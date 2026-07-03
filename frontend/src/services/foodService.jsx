@@ -11,8 +11,18 @@ const foodService = {
     return response.data;
   },
   
+  getFoods: async () => {
+    const response = await axiosInstance.get('/foods');
+    return response.data;
+  },
+  
   getFeaturedFoods: async () => {
     const response = await axiosInstance.get('/foods/featured');
+    return response.data;
+  },
+  
+  getFoodsByRestaurant: async (restaurantId) => {
+    const response = await axiosInstance.get(`/foods/restaurant/${restaurantId}`);
     return response.data;
   },
   

@@ -11,32 +11,32 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     addToCart: (state, action) => {
-      const { id, name, price, image, restaurantId } = action.payload;
+      const { _id, name, price, image, restaurantId } = action.payload;
+      const allowMultiRestaurant = JSON.parse(localStorage.getItem('allowMultiRestaurant')) || false;
       
-      // If adding from a different restaurant, clear cart first
-      if (state.restaurantId && state.restaurantId !== restaurantId) {
+      // If adding from a different restaurant and multi-restaurant is not allowed, clear cart first
+      if (!allowMultiRestaurant && state.restaurantId && state.restaurantId !== restaurantId) {
         state.items = [];
+        state.restaurantId = restaurantId;
+        localStorage.setItem('cartRestaurantId', restaurantId);
       }
-      
-      state.restaurantId = restaurantId;
-      localStorage.setItem('cartRestaurantId', restaurantId);
 
-      const existingItem = state.items.find(item => item.id === id);
+      const existingItem = state.items.find(item => item._id === _id);
       if (existingItem) {
         existingItem.quantity += 1;
       } else {
-        state.items.push({ id, name, price, image, quantity: 1 });
+        state.items.push({ _id, name, price, image, restaurantId, quantity: 1 });
       }
       
       localStorage.setItem('cartItems', JSON.stringify(state.items));
     },
     removeFromCart: (state, action) => {
-      const id = action.payload;
-      const existingItem = state.items.find(item => item.id === id);
+      const _id = action.payload;
+      const existingItem = state.items.find(item => item._id === _id);
       
-      if (existingItem.quantity === 1) {
-        state.items = state.items.filter(item => item.id !== id);
-      } else {
+      if (existingItem && existingItem.quantity === 1) {
+        state.items = state.items.filter(item => item._id !== _id);
+      } else if (existingItem) {
         existingItem.quantity -= 1;
       }
       

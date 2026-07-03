@@ -8,6 +8,8 @@ import useAuth from '../hooks/useAuth';
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
   const { itemCount } = useCart();
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
@@ -65,9 +67,37 @@ const Navbar = () => {
 
         {/* Icons */}
         <div className="flex items-center space-x-6">
-          <button className="text-premium-dark/70 hover:text-premium-dark transition-colors">
-            <Search size={20} strokeWidth={1.5} />
-          </button>
+          {showSearch ? (
+            <div className="flex items-center space-x-2">
+              <input 
+                type="text" 
+                placeholder="Search restaurants..."
+                className="border-b border-premium-dark/20 py-2 px-1 outline-none focus:border-premium-dark bg-transparent text-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    navigate(`/restaurants?search=${searchQuery}`);
+                    setShowSearch(false);
+                  }
+                }}
+                autoFocus
+              />
+              <button 
+                onClick={() => setShowSearch(false)}
+                className="text-premium-dark/70 hover:text-premium-dark"
+              >
+                <X size={20} strokeWidth={1.5} />
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={() => setShowSearch(true)}
+              className="text-premium-dark/70 hover:text-premium-dark transition-colors"
+            >
+              <Search size={20} strokeWidth={1.5} />
+            </button>
+          )}
           <Link to="/cart" className="text-premium-dark/70 hover:text-premium-dark transition-colors relative">
             <ShoppingBag size={20} strokeWidth={1.5} />
             <AnimatePresence>

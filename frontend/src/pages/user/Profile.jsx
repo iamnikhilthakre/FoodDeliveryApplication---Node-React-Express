@@ -93,7 +93,10 @@ const Profile = () => {
                     <p className="text-xs text-premium-dark/60 leading-relaxed uppercase tracking-widest">
                       {userData.address}
                     </p>
-                    <button className="mt-4 text-[10px] uppercase tracking-widest font-bold text-premium-accent hover:underline">
+                    <button 
+                      onClick={() => navigate('/addresses')}
+                      className="mt-4 text-[10px] uppercase tracking-widest font-bold text-premium-accent hover:underline"
+                    >
                       Edit Address
                     </button>
                   </div>

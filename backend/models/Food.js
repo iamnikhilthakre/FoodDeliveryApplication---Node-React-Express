@@ -6,6 +6,10 @@ const foodSchema = new mongoose.Schema({
     image: String,
     description: String,
     category: String,
+    isFeatured: {
+        type: Boolean,
+        default: false
+    },
 
     restaurant: {
         type: mongoose.Schema.Types.ObjectId,
