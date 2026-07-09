@@ -40,21 +40,12 @@
     ];
     console.log("Allowed Origins:", allowedOrigins);
 
-    app.use(
-    cors({
-        origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-
-        if (allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        }
-
-        console.log("Blocked Origin:", origin);
-        callback(new Error("Not allowed by CORS"));
-        },
-        credentials: true,
-    })
-    );
+  app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
 
     app.use(express.json());
     app.use(cookieParser());
