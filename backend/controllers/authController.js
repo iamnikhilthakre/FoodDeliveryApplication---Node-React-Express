@@ -22,10 +22,17 @@ exports.register = async (req, res) => {
             phone
         });
 
+        const token = jwt.sign({
+            id: user._id,
+            role: user.role
+        }, process.env.JWT_SECRET, {
+            expiresIn: "7d"
+        });
+
         const userResponse = user.toObject();
         delete userResponse.password;
 
-        res.status(201).json(userResponse);
+        res.status(201).json({ token, user: userResponse });
 
     } catch (error) {
         res.status(500).json({ message: error.message });

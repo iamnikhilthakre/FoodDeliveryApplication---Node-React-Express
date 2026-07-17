@@ -10,6 +10,7 @@ import { loginSuccess } from '../../features/auth/authSlice';
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -18,7 +19,7 @@ const Login = () => {
     setLoading(true);
     try {
       const result = await dispatch(loginUser(formData)).unwrap();
-      dispatch(loginSuccess(result));
+      dispatch(loginSuccess({ ...result, rememberMe }));
       navigate('/');
     } catch (error) {
       console.error("Login failed:", error);
@@ -82,7 +83,12 @@ const Login = () => {
 
             <div className="flex items-center justify-between">
               <label className="flex items-center space-x-2 cursor-pointer">
-                <input type="checkbox" className="w-3 h-3 accent-premium-dark" />
+                <input 
+                  type="checkbox" 
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-3 h-3 accent-premium-dark" 
+                />
                 <span className="text-[10px] uppercase tracking-widest text-premium-dark/50">Remember me</span>
               </label>
               <a href="#" className="text-[10px] uppercase tracking-widest text-premium-accent font-bold hover:underline">
